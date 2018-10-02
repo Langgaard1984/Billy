@@ -34,18 +34,19 @@ constructor(props) {
           <ul className="list">
             {contacts.map(contact =>
               <li key={contact.id} className="item">
-                <div>{contact.name}</div>
-                <button id={contact.id} onClick={() => {this.handleDelete(contact.id)}}>Delete
-                </button>
+                <div className="contact">{contact.name}</div>
+                <div className="delete">
+                <button className="button" onClick={() => {this.handleDelete(contact.id)}}>Delete</button>
+                </div>
               </li> )}
           </ul> }
-          <form>
+          <form className="form">
             <h2>Ny kontakt</h2>
             <div className="line">
-              <label>Navn</label>
+              <label className="namelabel">Navn</label>
               <input type="text" name="name" value={name} onChange={this.handleChange} />
             </div>
-            <button onClick={this.handleCreate}>Opret</button>
+            <button className="create button" onClick={this.handleCreate}>Opret</button>
           </form>
         </div>
       </div>

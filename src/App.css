@@ -22,16 +22,40 @@
   background-color: white;
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  
+}
+.list {
+padding: 3em;
+margin-right: 2em;
 }
 .item {
   display: flex;
-  margin-left: 2rem;
+  margin-bottom: 0.5em;
+}
+.contact {
+  margin-right: 3em;
+}
+.delete {
+  display: flex;
+  align-self: flex-end;
 }
 .form {
   display: flex;
   flex-direction: column;
-  margin-left: 2rem;
+  margin-left: 2em;
 }
+.line {
+  margin-bottom: 1em;
+}
+.namelabel {
+  margin-right: 1em;
+}
+.create {
+  width: 30%;
+  align-self: flex-end;
+}
+
 
 
 @keyframes App-logo-spin {
