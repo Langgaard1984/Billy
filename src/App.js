@@ -11,42 +11,41 @@ class App extends Component {
 constructor(props) {
     super(props)
     this.client = new BillyClient(accessToken)
-    this.state = {contacts: [], isLoading: false, organizationId: null, name: ''}
+    this.state = {contacts: [], organizationId: null, name: ''}
   }
 
   async componentDidMount() {
-    this.setState({isLoading: true})
     const contacts = await this.getContacts()
-    this.setState({contacts, isLoading: false, organizationId: contacts.length > 0 ? contacts[0].organizationId : null})
+    this.setState({contacts, organizationId: contacts.length > 0 ? contacts[0].organizationId : null})
     
   }
 
   render() {
-    const {contacts, name, isLoading} = this.state
+    const {contacts, name} = this.state
 
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
+        <header className="App__header">
+          <img src={logo} className="App__logo" alt="logo" />
         </header>
-        <div className="App-body">
-        {!isLoading && contacts.length > 0 && 
+        <div className="App__body">
+        {contacts.length > 0 && 
           <ul className="list">
             {contacts.map(contact =>
-              <li key={contact.id} className="item">
-                <div className="contact">{contact.name}</div>
-                <div className="delete">
-                <button className="button" onClick={() => {this.handleDelete(contact.id)}}>Delete</button>
+              <li key={contact.id} className="list__item">
+                <div className="list__item-record">{contact.name}</div>
+                <div className="list__item-options">
+                <button className="list__item-button list__item-button--delete" onClick={() => {this.handleDelete(contact.id)}}>Slet</button>
                 </div>
               </li> )}
           </ul> }
           <form className="form">
-            <h2>Ny kontakt</h2>
-            <div className="line">
-              <label className="namelabel">Navn</label>
-              <input type="text" name="name" value={name} onChange={this.handleChange} />
+            <h2 className="form__title">Ny kontakt</h2>
+            <div className="form__content">
+              <label className="form__label">Navn</label>
+              <input className="form__input" type="text" name="name" value={name} onChange={this.handleChange} />
             </div>
-            <button className="create button" onClick={this.handleCreate}>Opret</button>
+            <button className="form__button" disabled={name.length === 0} onClick={this.handleCreate}>Opret</button>
           </form>
         </div>
       </div>
@@ -59,7 +58,10 @@ constructor(props) {
 
   handleCreate = async(e) => {
     e.preventDefault()
-    this.setState({isLoading: true})
+    //avoid creating empty records
+     if (!this.state.name.length) {
+      return false
+    }
   
   //make sure organizationId is set
     if(!this.state.organizationId) {
@@ -72,17 +74,18 @@ constructor(props) {
 
     // update list
     const contacts = await this.getContacts()
-    this.setState({contacts, isLoading: false, name: ''})
+    this.setState({contacts, name: ''})
+
+    return true
     
   }
 
   handleDelete = async(id) => {
-    this.setState({isLoading: true})
     await this.client.request('DELETE', `/contacts?ids[]=${id}`)
 
     // update list
     const contacts = await this.getContacts()
-    this.setState({contacts, isLoading: false})
+    this.setState({contacts})
       
   }
 
