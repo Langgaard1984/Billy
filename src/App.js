@@ -59,10 +59,16 @@ constructor(props) {
 
   handleCreate = async(e) => {
     e.preventDefault()
-    const {name, organizationId} = this.state
-
     this.setState({isLoading: true})
-    await this.createContact(organizationId, name)
+  
+  //make sure organizationId is set
+    if(!this.state.organizationId) {
+      const organizationId = await this.getOrganizationId()
+      await this.createContact(organizationId, this.state.name)
+      this.setState({organizationId})
+    } else {
+      await this.createContact(this.state.organizationId, this.state.name)
+    }
 
     // update list
     const contacts = await this.getContacts()
@@ -95,6 +101,11 @@ constructor(props) {
 
     return res.contacts
   }
+
+  getOrganizationId = async () => {
+    const res = await this.client.request('GET', '/organization')
+    return res.organization.id
+}
 }
 
 

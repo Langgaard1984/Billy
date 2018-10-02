@@ -26,6 +26,8 @@
   
 }
 .list {
+display: flex;
+flex-direction: column;
 padding: 3em;
 margin-right: 2em;
 }
@@ -35,11 +37,12 @@ margin-right: 2em;
 }
 .contact {
   margin-right: 3em;
+  justify-content: flex-start;
 }
 .delete {
-  display: flex;
-  align-self: flex-end;
+justify-content: flex-end;
 }
+
 .form {
   display: flex;
   flex-direction: column;
