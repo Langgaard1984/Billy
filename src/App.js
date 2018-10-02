@@ -6,63 +6,96 @@ const accessToken = '5f25384115bca73441408a36a8da95c604a043a5'
 
 
 class App extends Component {
+  client = null
 
 constructor(props) {
     super(props)
-    this.state = {contacts: [], isLoading: false, organizationId: null}; 
-    this.handleDelete = this.handleDelete.bind(this);
+    this.client = new BillyClient(accessToken)
+    this.state = {contacts: [], isLoading: false, organizationId: null, name: ''}
   }
 
   async componentDidMount() {
-    const client = new BillyClient(accessToken)
     this.setState({isLoading: true})
-    await getContacts(client).then(contacts => {
-      this.setState({contacts, isLoading: false, organizationId: contacts[0].organizationId})
-    })
+    const contacts = await this.getContacts()
+    this.setState({contacts, isLoading: false, organizationId: contacts.length > 0 ? contacts[0].organizationId : null})
+    
   }
 
   render() {
+    const {contacts, name, isLoading} = this.state
+
     return (
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
         </header>
         <div className="App-body">
-        {!this.state.isLoading ? 
-        <div className="list">
-            {this.state.contacts.map(contact =>
-              <div key={contact.id} className="item">
-                <div className="">{contact.name}</div>
-                <div className=""><button id={contact.id} onClick={this.handleDelete}>Delete</button></div>
-              </div>)}
-          </div> : null
-        }
-        <div className="form">
-          <h>Ny kontakt</h>
-          <div className="line">
-          <label>Navn</label><input type="text"/>
-          <button onClick={this.handleCreate}>Opret</button>
-          </div>
-        </div>
+        {!isLoading && contacts.length > 0 && 
+          <ul className="list">
+            {contacts.map(contact =>
+              <li key={contact.id} className="item">
+                <div>{contact.name}</div>
+                <button id={contact.id} onClick={() => {this.handleDelete(contact.id)}}>Delete
+                </button>
+              </li> )}
+          </ul> }
+          <form>
+            <h2>Ny kontakt</h2>
+            <div className="line">
+              <label>Navn</label>
+              <input type="text" name="name" value={name} onChange={this.handleChange} />
+            </div>
+            <button onClick={this.handleCreate}>Opret</button>
+          </form>
         </div>
       </div>
     );
   }
 
-  async handleCreate(e) {
-    e.preventDefault()
+  handleChange = (e) => {
+    this.setState({name: e.target.value})
   }
 
-  async handleDelete(e) {
+  handleCreate = async(e) => {
     e.preventDefault()
-    console.log(e.target.id)
-    //const client = new BillyClient(accessToken)
-    //this.setState({isLoading: true})
-    //await deleteContact(client, e.target.id).then(contacts => {
-    //  this.setState({contacts, isLoading: false})
-    //})
+    const {name, organizationId} = this.state
+
+    this.setState({isLoading: true})
+    await this.createContact(organizationId, name)
+
+    // update list
+    const contacts = await this.getContacts()
+    this.setState({contacts, isLoading: false, name: ''})
+    
+  }
+
+  handleDelete = async(id) => {
+    this.setState({isLoading: true})
+    await this.client.request('DELETE', `/contacts?ids[]=${id}`)
+
+    // update list
+    const contacts = await this.getContacts()
+    this.setState({contacts, isLoading: false})
+      
+  }
+
+  getContacts = async () => {
+    const res = await this.client.request('GET', '/contacts')
+    return res.contacts
+  }
+
+  createContact = async (organizationId, name) => {
+    const contact = {
+        organizationId,
+        name,
+        'countryId': 'DK'
+    }
+    const res = await this.client.request('POST', '/contacts', { contact: contact })
+
+    return res.contacts
   }
 }
+
 
 export default App;
 
@@ -99,23 +132,9 @@ class BillyClient {
 
 }
 
-    async function getContacts (client) {
-    const res = await client.request('GET', '/contacts')
-    return res.contacts
-}
+
 
 //    async function deleteContact (client, contactId) {
 //    const res = await client.request('DELETE', '/contacts', {Ids: [contactId]})
 //    return res.contacts
 //}
-
-async function createContact (client, organizationId, name) {
-    const contact = {
-        'organizationId': organizationId,
-        'name': name,
-        'countryId': 'DK'
-    }
-    const res = await client.request('POST', '/contacts', { contact: contact })
-
-    return res.contacts
-}
