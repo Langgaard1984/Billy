@@ -2,20 +2,22 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 const axios = require('axios')
+const accessToken = '5f25384115bca73441408a36a8da95c604a043a5'
 
 
 class App extends Component {
 
 constructor(props) {
     super(props)
-    this.state = {contacts: [], isLoading: false}; 
+    this.state = {contacts: [], isLoading: false, organizationId: null}; 
+    this.handleDelete = this.handleDelete.bind(this);
   }
 
   async componentDidMount() {
-    const client = new BillyClient('5f25384115bca73441408a36a8da95c604a043a5')
+    const client = new BillyClient(accessToken)
     this.setState({isLoading: true})
     await getContacts(client).then(contacts => {
-      this.setState({contacts, isLoading: false})
+      this.setState({contacts, isLoading: false, organizationId: contacts[0].organizationId})
     })
   }
 
@@ -25,20 +27,40 @@ constructor(props) {
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
         </header>
-        <body className="App-body">
+        <div className="App-body">
         {!this.state.isLoading ? 
-        <table className="contact-list">
-          <tbody>
-            {this.state.contacts.map(contact => 
-              <tr>
-                <td>{contact.name}</td> 
-              </tr>)}
-          </tbody>
-        </table> : null
+        <div className="list">
+            {this.state.contacts.map(contact =>
+              <div key={contact.id} className="item">
+                <div className="">{contact.name}</div>
+                <div className=""><button id={contact.id} onClick={this.handleDelete}>Delete</button></div>
+              </div>)}
+          </div> : null
         }
-        </body>
+        <div className="form">
+          <h>Ny kontakt</h>
+          <div className="line">
+          <label>Navn</label><input type="text"/>
+          <button onClick={this.handleCreate}>Opret</button>
+          </div>
+        </div>
+        </div>
       </div>
     );
+  }
+
+  async handleCreate(e) {
+    e.preventDefault()
+  }
+
+  async handleDelete(e) {
+    e.preventDefault()
+    console.log(e.target.id)
+    //const client = new BillyClient(accessToken)
+    //this.setState({isLoading: true})
+    //await deleteContact(client, e.target.id).then(contacts => {
+    //  this.setState({contacts, isLoading: false})
+    //})
   }
 }
 
@@ -79,5 +101,21 @@ class BillyClient {
 
     async function getContacts (client) {
     const res = await client.request('GET', '/contacts')
+    return res.contacts
+}
+
+//    async function deleteContact (client, contactId) {
+//    const res = await client.request('DELETE', '/contacts', {Ids: [contactId]})
+//    return res.contacts
+//}
+
+async function createContact (client, organizationId, name) {
+    const contact = {
+        'organizationId': organizationId,
+        'name': name,
+        'countryId': 'DK'
+    }
+    const res = await client.request('POST', '/contacts', { contact: contact })
+
     return res.contacts
 }
